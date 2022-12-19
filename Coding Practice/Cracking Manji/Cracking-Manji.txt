@@ -1,0 +1,31 @@
+Write a NIOS II assembly-language loop (a complete program is not
+required) to transfer data words to the external device connected to the
+given port. The words to be transferred begin at location LIST, and the
+number of words to be transferred is available at location N (this is the
+terminating condition, which changes). The port status flag is in bit 3.
+
+.equ STATUS_FLAG            0x0004
+
+-----------------------------------------------------------------------
+
+movia   r2, LIST            # where list is defined elsewhere
+movia   r3, N               # N = len(LIST)
+movia   r4, STATUS_REG      # moving the status register
+
+loop:
+    ldw     r5, 0(r4)                   # getting the data from the status register
+    andi    r5, r5, STATUS_FLAG         # masking off the status flag bit
+    movi    r6, STATUS_FLAG             # moving the value of the flag into r6
+
+    bne     r5, r6, loop                # checking if status flag has been raised
+
+# past this point, it has fallen through, start moving words from the list
+    movia   r8, DATA_REG
+
+    ldw     r7, 0(r2)                   # fetching first element from list
+    stw     r7, 0(r8)                   # store content r7 into 0(r8)
+
+    addi    r2, r2, 4                   # increment list pointer (4 is size of word)
+    subi    r3, r3, 1                   # decrement length of list
+    
+    bne     r3, r0, loop                # if r3 (list len) is not 0, keep looping
